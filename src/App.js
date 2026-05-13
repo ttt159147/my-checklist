@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -24,8 +24,12 @@ export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [newText, setNewText] = useState("");
   const [adding, setAdding] = useState(false);
+  const [draggingIndex, setDraggingIndex] = useState(null);
 
-  // 読み込み
+  const dragIndex = useRef(null);
+  const dragOverIndex = useRef(null);
+  const touchStartIndex = useRef(null);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem("checklist-data");
@@ -38,7 +42,6 @@ export default function App() {
     setLoaded(true);
   }, []);
 
-  // 保存
   useEffect(() => {
     if (!loaded) return;
     localStorage.setItem("checklist-data", JSON.stringify({ items, checked, date: TODAY }));
@@ -56,6 +59,46 @@ export default function App() {
   const deleteItem = (id) => {
     setItems(p => p.filter(i => i.id !== id));
     setChecked(p => { const n = { ...p }; delete n[id]; return n; });
+  };
+
+  const moveItems = (from, to) => {
+    if (from === null || to === null || from === to) return;
+    const newItems = [...items];
+    const [moved] = newItems.splice(from, 1);
+    newItems.splice(to, 0, moved);
+    setItems(newItems);
+  };
+
+  // PC drag
+  const onDragStart = (index) => { dragIndex.current = index; setDraggingIndex(index); };
+  const onDragOver = (e, index) => { e.preventDefault(); dragOverIndex.current = index; };
+  const onDrop = (index) => {
+    moveItems(dragIndex.current, index);
+    dragIndex.current = null;
+    dragOverIndex.current = null;
+    setDraggingIndex(null);
+  };
+  const onDragEnd = () => setDraggingIndex(null);
+
+  // スマホ touch
+  const onTouchStart = (e, index) => {
+    touchStartIndex.current = index;
+    setDraggingIndex(index);
+  };
+  const onTouchMove = (e) => {
+    e.preventDefault();
+    const y = e.touches[0].clientY;
+    const elements = document.querySelectorAll(".checklist-item");
+    elements.forEach((el, i) => {
+      const rect = el.getBoundingClientRect();
+      if (y > rect.top && y < rect.bottom) dragOverIndex.current = i;
+    });
+  };
+  const onTouchEnd = () => {
+    moveItems(touchStartIndex.current, dragOverIndex.current);
+    touchStartIndex.current = null;
+    dragOverIndex.current = null;
+    setDraggingIndex(null);
   };
 
   const done = items.filter(i => checked[i.id]).length;
@@ -77,7 +120,6 @@ export default function App() {
         </div>
         <h1 style={{ color: "#fff", fontSize: "24px", fontWeight: "800", margin: "0 0 20px", textAlign: "center" }}>毎日チェックリスト</h1>
 
-        {/* 進捗バー */}
         <div style={{ background: "#13131e", border: "1px solid #1e1e30", borderRadius: "14px", padding: "14px 18px", marginBottom: "14px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <span style={{ color: "#5a5a72", fontSize: "13px" }}>達成度</span>
@@ -91,26 +133,55 @@ export default function App() {
           {allDone && <div style={{ textAlign: "center", marginTop: "8px", color: "#34d399", fontSize: "13px", fontWeight: "600" }}>🎉 全部完了！</div>}
         </div>
 
-        {/* チェックリスト */}
         <div>
-          {items.map(item => (
+          {items.map((item, index) => (
             <div
               key={item.id}
-              onClick={() => toggle(item.id)}
-              style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px", background: checked[item.id] ? "rgba(99,102,241,0.07)" : "#13131e", border: `1px solid ${checked[item.id] ? "rgba(99,102,241,0.22)" : "#1e1e30"}`, borderRadius: "11px", cursor: "pointer", marginBottom: "5px" }}
+              className="checklist-item"
+              draggable
+              onDragStart={() => onDragStart(index)}
+              onDragOver={(e) => onDragOver(e, index)}
+              onDrop={() => onDrop(index)}
+              onDragEnd={onDragEnd}
+              style={{
+                display: "flex", alignItems: "center", gap: "10px",
+                padding: "12px 14px",
+                background: draggingIndex === index ? "rgba(99,102,241,0.15)" : checked[item.id] ? "rgba(99,102,241,0.07)" : "#13131e",
+                border: `1px solid ${draggingIndex === index ? "#6366f1" : checked[item.id] ? "rgba(99,102,241,0.22)" : "#1e1e30"}`,
+                borderRadius: "11px", marginBottom: "5px",
+                opacity: draggingIndex === index ? 0.5 : 1,
+                transition: "all 0.15s",
+              }}
             >
-              <div style={{ width: "20px", height: "20px", borderRadius: "5px", border: `2px solid ${checked[item.id] ? "#6366f1" : "#2e2e42"}`, background: checked[item.id] ? "#6366f1" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div
+                onTouchStart={(e) => onTouchStart(e, index)}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                style={{ color: "#3a3a55", cursor: "grab", fontSize: "18px", flexShrink: 0, padding: "0 2px", touchAction: "none", userSelect: "none" }}
+              >
+                ⠿
+              </div>
+
+              <div
+                onClick={() => toggle(item.id)}
+                style={{ width: "20px", height: "20px", borderRadius: "5px", border: `2px solid ${checked[item.id] ? "#6366f1" : "#2e2e42"}`, background: checked[item.id] ? "#6366f1" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}
+              >
                 {checked[item.id] && (
                   <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
                     <path d="M1 3.5L4 6.5L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 )}
               </div>
-              <span style={{ flex: 1, fontSize: "15px", color: checked[item.id] ? "#3a3a55" : "#d1d1e0", textDecoration: checked[item.id] ? "line-through" : "none" }}>
+
+              <span
+                onClick={() => toggle(item.id)}
+                style={{ flex: 1, fontSize: "15px", color: checked[item.id] ? "#3a3a55" : "#d1d1e0", textDecoration: checked[item.id] ? "line-through" : "none", cursor: "pointer" }}
+              >
                 {item.text}
               </span>
+
               <button
-                onClick={e => { e.stopPropagation(); deleteItem(item.id); }}
+                onClick={() => deleteItem(item.id)}
                 style={{ background: "none", border: "none", color: "#2a2a40", cursor: "pointer", fontSize: "14px", padding: "2px 6px" }}
                 onMouseEnter={e => e.target.style.color = "#f87171"}
                 onMouseLeave={e => e.target.style.color = "#2a2a40"}
@@ -119,7 +190,6 @@ export default function App() {
           ))}
         </div>
 
-        {/* 追加 */}
         {adding ? (
           <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
             <input
@@ -141,7 +211,6 @@ export default function App() {
           >＋ タスクを追加</button>
         )}
 
-        {/* リセット */}
         <div style={{ textAlign: "center", marginTop: "16px" }}>
           <button
             onClick={() => setChecked({})}
