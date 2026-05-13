@@ -71,8 +71,25 @@ export default function App() {
     localStorage.setItem("checklist-data", JSON.stringify({ items, checked, date: TODAY }));
   }, [items, checked, loaded]);
 
-  const toggle = (id) => { if (editingId === id) return; setChecked(p => ({ ...p, [id]: !p[id] })); };
-  const toggleSub = (itemId, subId) => { const key = `sub-${itemId}-${subId}`; setChecked(p => ({ ...p, [key]: !p[key] })); };
+  // メインタスクのチェック → サブタスクも全部連動
+  const toggle = (item) => {
+    if (editingId === item.id) return;
+    const newVal = !checked[item.id];
+    setChecked(p => {
+      const n = { ...p, [item.id]: newVal };
+      // メインをチェックON→サブも全ON、メインをOFF→サブはそのまま
+      if (newVal && item.subs.length > 0) {
+        item.subs.forEach(sub => { n[`sub-${item.id}-${sub.id}`] = true; });
+      }
+      return n;
+    });
+  };
+
+  const toggleSub = (itemId, subId) => {
+    const key = `sub-${itemId}-${subId}`;
+    setChecked(p => ({ ...p, [key]: !p[key] }));
+  };
+
   const toggleExpand = (id) => setExpandedIds(p => ({ ...p, [id]: !p[id] }));
 
   const addItem = () => {
@@ -145,7 +162,6 @@ export default function App() {
         </div>
         <h1 style={{ color: "#1f2937", fontSize: "24px", fontWeight: "800", margin: "0 0 20px", textAlign: "center" }}>毎日チェックリスト</h1>
 
-        {/* 進捗バー */}
         <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: "14px", padding: "14px 18px", marginBottom: "14px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <span style={{ color: "#6b7280", fontSize: "13px" }}>達成度</span>
@@ -159,7 +175,6 @@ export default function App() {
           {allDone && <div style={{ textAlign: "center", marginTop: "8px", color: "#10b981", fontSize: "13px", fontWeight: "600" }}>🎉 全部完了！</div>}
         </div>
 
-        {/* リスト */}
         <div>
           {items.map((item, index) => {
             const c = COLORS.find(c => c.id === (item.color || "default"));
@@ -191,7 +206,7 @@ export default function App() {
                     <div onTouchStart={(e) => !isEditing && onTouchStart(e, index)} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
                       style={{ color: "#d1d5db", cursor: isEditing ? "default" : "grab", fontSize: "18px", flexShrink: 0, padding: "0 2px", touchAction: "none", userSelect: "none" }}>⠿</div>
 
-                    <div onClick={() => toggle(item.id)}
+                    <div onClick={() => toggle(item)}
                       style={{ width: "20px", height: "20px", borderRadius: "5px", border: `2px solid ${isChecked ? "#6366f1" : "#d1d5db"}`, background: isChecked ? "#6366f1" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
                       {isChecked && <svg width="11" height="8" viewBox="0 0 11 8" fill="none"><path d="M1 3.5L4 6.5L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                     </div>
@@ -203,13 +218,12 @@ export default function App() {
                         style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "15px", outline: "none", padding: "2px 0" }}
                       />
                     ) : (
-                      <span onClick={() => toggle(item.id)} onDoubleClick={() => startEdit(item)}
+                      <span onClick={() => toggle(item)} onDoubleClick={() => startEdit(item)}
                         style={{ flex: 1, fontSize: "15px", color: isChecked ? "#9ca3af" : "#1f2937", textDecoration: isChecked ? "line-through" : "none", cursor: "pointer" }}>
                         {item.text}
                       </span>
                     )}
 
-                    {/* サブタスク展開ボタン */}
                     {hasSubs && !isEditing && (
                       <button onClick={(e) => { e.stopPropagation(); toggleExpand(item.id); }}
                         style={{ background: "none", border: "none", color: "#9ca3af", cursor: "pointer", fontSize: "12px", padding: "2px 4px", fontWeight: "600" }}>
@@ -244,7 +258,6 @@ export default function App() {
                   )}
                 </div>
 
-                {/* サブタスク（折りたたみ） */}
                 {hasSubs && isExpanded && item.subs.map((sub, si) => {
                   const subKey = `sub-${item.id}-${sub.id}`;
                   const isSubChecked = checked[subKey];
@@ -284,7 +297,6 @@ export default function App() {
                   );
                 })}
 
-                {/* サブタスク追加欄 */}
                 {addingSubId === item.id && (
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px 8px 36px", background: "#fafafa", border: "1px solid #e5e7eb", borderTop: "none", borderRadius: "0 0 11px 11px" }}>
                     <span style={{ color: "#d1d5db", fontSize: "12px" }}>|--</span>
