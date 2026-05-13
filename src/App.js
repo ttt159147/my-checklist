@@ -2,20 +2,40 @@ import { useState, useEffect, useRef } from "react";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
+const COLORS = [
+  { id: "default", bg: "#13131e", border: "#1e1e30", label: "デフォルト" },
+  { id: "red",     bg: "rgba(248,113,113,0.1)", border: "rgba(248,113,113,0.35)", label: "赤" },
+  { id: "orange",  bg: "rgba(251,146,60,0.1)",  border: "rgba(251,146,60,0.35)",  label: "オレンジ" },
+  { id: "yellow",  bg: "rgba(250,204,21,0.1)",  border: "rgba(250,204,21,0.35)",  label: "黄" },
+  { id: "green",   bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.35)",  label: "緑" },
+  { id: "blue",    bg: "rgba(96,165,250,0.1)",  border: "rgba(96,165,250,0.35)",  label: "青" },
+  { id: "purple",  bg: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.35)", label: "紫" },
+];
+
+const COLOR_DOT = {
+  default: "#3a3a55",
+  red:     "#f87171",
+  orange:  "#fb923c",
+  yellow:  "#facc15",
+  green:   "#34d399",
+  blue:    "#60a5fa",
+  purple:  "#a78bfa",
+};
+
 const DEFAULT_ITEMS = [
-  { id: 1, text: "クラフトボス" },
-  { id: 2, text: "コカ・コーラレシートアップ" },
-  { id: 3, text: "毎日レシート" },
-  { id: 4, text: "バーコードスキャン" },
-  { id: 5, text: "ジョージアスキャン" },
-  { id: 6, text: "やかんスキャン" },
-  { id: 7, text: "綾鷹スキャン" },
-  { id: 8, text: "アクエリアススキャン" },
-  { id: 9, text: "バーコードx5スキャン" },
-  { id: 10, text: "yモバイルくじ" },
-  { id: 11, text: "ソフトバンクくじ" },
-  { id: 12, text: "エビスおみくじ" },
-  { id: 13, text: "epark薬クーポン" },
+  { id: 1,  text: "クラフトボス",         color: "default" },
+  { id: 2,  text: "コカ・コーラレシートアップ", color: "default" },
+  { id: 3,  text: "毎日レシート",          color: "default" },
+  { id: 4,  text: "バーコードスキャン",     color: "default" },
+  { id: 5,  text: "ジョージアスキャン",     color: "default" },
+  { id: 6,  text: "やかんスキャン",        color: "default" },
+  { id: 7,  text: "綾鷹スキャン",         color: "default" },
+  { id: 8,  text: "アクエリアススキャン",   color: "default" },
+  { id: 9,  text: "バーコードx5スキャン",  color: "default" },
+  { id: 10, text: "yモバイルくじ",        color: "default" },
+  { id: 11, text: "ソフトバンクくじ",      color: "default" },
+  { id: 12, text: "エビスおみくじ",        color: "default" },
+  { id: 13, text: "epark薬クーポン",      color: "default" },
 ];
 
 export default function App() {
@@ -25,6 +45,7 @@ export default function App() {
   const [newText, setNewText] = useState("");
   const [adding, setAdding] = useState(false);
   const [draggingIndex, setDraggingIndex] = useState(null);
+  const [colorPickerId, setColorPickerId] = useState(null);
 
   const dragIndex = useRef(null);
   const dragOverIndex = useRef(null);
@@ -51,7 +72,7 @@ export default function App() {
 
   const addItem = () => {
     if (!newText.trim()) return;
-    setItems(p => [...p, { id: Date.now(), text: newText.trim() }]);
+    setItems(p => [...p, { id: Date.now(), text: newText.trim(), color: "default" }]);
     setNewText("");
     setAdding(false);
   };
@@ -59,6 +80,11 @@ export default function App() {
   const deleteItem = (id) => {
     setItems(p => p.filter(i => i.id !== id));
     setChecked(p => { const n = { ...p }; delete n[id]; return n; });
+  };
+
+  const setColor = (id, colorId) => {
+    setItems(p => p.map(i => i.id === id ? { ...i, color: colorId } : i));
+    setColorPickerId(null);
   };
 
   const moveItems = (from, to) => {
@@ -69,7 +95,6 @@ export default function App() {
     setItems(newItems);
   };
 
-  // PC drag
   const onDragStart = (index) => { dragIndex.current = index; setDraggingIndex(index); };
   const onDragOver = (e, index) => { e.preventDefault(); dragOverIndex.current = index; };
   const onDrop = (index) => {
@@ -80,11 +105,7 @@ export default function App() {
   };
   const onDragEnd = () => setDraggingIndex(null);
 
-  // スマホ touch
-  const onTouchStart = (e, index) => {
-    touchStartIndex.current = index;
-    setDraggingIndex(index);
-  };
+  const onTouchStart = (e, index) => { touchStartIndex.current = index; setDraggingIndex(index); };
   const onTouchMove = (e) => {
     e.preventDefault();
     const y = e.touches[0].clientY;
@@ -112,7 +133,8 @@ export default function App() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f0f13", fontFamily: "'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif", display: "flex", justifyContent: "center", padding: "28px 16px" }}>
+    <div style={{ minHeight: "100vh", background: "#0f0f13", fontFamily: "'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif", display: "flex", justifyContent: "center", padding: "28px 16px" }}
+      onClick={() => setColorPickerId(null)}>
       <div style={{ width: "100%", maxWidth: "460px" }}>
 
         <div style={{ fontSize: "11px", color: "#444460", letterSpacing: "0.15em", textAlign: "center", marginBottom: "4px" }}>
@@ -134,60 +156,96 @@ export default function App() {
         </div>
 
         <div>
-          {items.map((item, index) => (
-            <div
-              key={item.id}
-              className="checklist-item"
-              draggable
-              onDragStart={() => onDragStart(index)}
-              onDragOver={(e) => onDragOver(e, index)}
-              onDrop={() => onDrop(index)}
-              onDragEnd={onDragEnd}
-              style={{
-                display: "flex", alignItems: "center", gap: "10px",
-                padding: "12px 14px",
-                background: draggingIndex === index ? "rgba(99,102,241,0.15)" : checked[item.id] ? "rgba(99,102,241,0.07)" : "#13131e",
-                border: `1px solid ${draggingIndex === index ? "#6366f1" : checked[item.id] ? "rgba(99,102,241,0.22)" : "#1e1e30"}`,
-                borderRadius: "11px", marginBottom: "5px",
-                opacity: draggingIndex === index ? 0.5 : 1,
-                transition: "all 0.15s",
-              }}
-            >
-              <div
-                onTouchStart={(e) => onTouchStart(e, index)}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-                style={{ color: "#3a3a55", cursor: "grab", fontSize: "18px", flexShrink: 0, padding: "0 2px", touchAction: "none", userSelect: "none" }}
-              >
-                ⠿
-              </div>
+          {items.map((item, index) => {
+            const c = COLORS.find(c => c.id === (item.color || "default"));
+            const isChecked = checked[item.id];
+            return (
+              <div key={item.id} style={{ position: "relative", marginBottom: "5px" }}>
+                <div
+                  className="checklist-item"
+                  draggable
+                  onDragStart={() => onDragStart(index)}
+                  onDragOver={(e) => onDragOver(e, index)}
+                  onDrop={() => onDrop(index)}
+                  onDragEnd={onDragEnd}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "10px",
+                    padding: "12px 14px",
+                    background: draggingIndex === index ? "rgba(99,102,241,0.15)" : isChecked ? "rgba(99,102,241,0.07)" : c.bg,
+                    border: `1px solid ${draggingIndex === index ? "#6366f1" : isChecked ? "rgba(99,102,241,0.22)" : c.border}`,
+                    borderRadius: "11px",
+                    opacity: draggingIndex === index ? 0.5 : 1,
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {/* ドラッグハンドル */}
+                  <div
+                    onTouchStart={(e) => onTouchStart(e, index)}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                    style={{ color: "#3a3a55", cursor: "grab", fontSize: "18px", flexShrink: 0, padding: "0 2px", touchAction: "none", userSelect: "none" }}
+                  >⠿</div>
 
-              <div
-                onClick={() => toggle(item.id)}
-                style={{ width: "20px", height: "20px", borderRadius: "5px", border: `2px solid ${checked[item.id] ? "#6366f1" : "#2e2e42"}`, background: checked[item.id] ? "#6366f1" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}
-              >
-                {checked[item.id] && (
-                  <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
-                    <path d="M1 3.5L4 6.5L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  {/* チェックボックス */}
+                  <div
+                    onClick={() => toggle(item.id)}
+                    style={{ width: "20px", height: "20px", borderRadius: "5px", border: `2px solid ${isChecked ? "#6366f1" : "#2e2e42"}`, background: isChecked ? "#6366f1" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}
+                  >
+                    {isChecked && (
+                      <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                        <path d="M1 3.5L4 6.5L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+
+                  {/* テキスト */}
+                  <span
+                    onClick={() => toggle(item.id)}
+                    style={{ flex: 1, fontSize: "15px", color: isChecked ? "#3a3a55" : "#d1d1e0", textDecoration: isChecked ? "line-through" : "none", cursor: "pointer" }}
+                  >{item.text}</span>
+
+                  {/* 色ボタン */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setColorPickerId(colorPickerId === item.id ? null : item.id); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", flexShrink: 0 }}
+                    title="色を変更"
+                  >
+                    <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: COLOR_DOT[item.color || "default"], border: "2px solid #2a2a40" }} />
+                  </button>
+
+                  {/* 削除ボタン */}
+                  <button
+                    onClick={() => deleteItem(item.id)}
+                    style={{ background: "none", border: "none", color: "#2a2a40", cursor: "pointer", fontSize: "14px", padding: "2px 4px" }}
+                    onMouseEnter={e => e.target.style.color = "#f87171"}
+                    onMouseLeave={e => e.target.style.color = "#2a2a40"}
+                  >✕</button>
+                </div>
+
+                {/* カラーピッカー */}
+                {colorPickerId === item.id && (
+                  <div
+                    onClick={e => e.stopPropagation()}
+                    style={{ position: "absolute", right: "0", top: "calc(100% + 4px)", background: "#1e1e2e", border: "1px solid #2e2e42", borderRadius: "12px", padding: "10px", display: "flex", gap: "8px", zIndex: 100, boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}
+                  >
+                    {COLORS.map(col => (
+                      <button
+                        key={col.id}
+                        onClick={() => setColor(item.id, col.id)}
+                        title={col.label}
+                        style={{
+                          width: "22px", height: "22px", borderRadius: "50%",
+                          background: COLOR_DOT[col.id],
+                          border: (item.color || "default") === col.id ? "2px solid #fff" : "2px solid transparent",
+                          cursor: "pointer", padding: 0,
+                        }}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
-
-              <span
-                onClick={() => toggle(item.id)}
-                style={{ flex: 1, fontSize: "15px", color: checked[item.id] ? "#3a3a55" : "#d1d1e0", textDecoration: checked[item.id] ? "line-through" : "none", cursor: "pointer" }}
-              >
-                {item.text}
-              </span>
-
-              <button
-                onClick={() => deleteItem(item.id)}
-                style={{ background: "none", border: "none", color: "#2a2a40", cursor: "pointer", fontSize: "14px", padding: "2px 6px" }}
-                onMouseEnter={e => e.target.style.color = "#f87171"}
-                onMouseLeave={e => e.target.style.color = "#2a2a40"}
-              >✕</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {adding ? (
