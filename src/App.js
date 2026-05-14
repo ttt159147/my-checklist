@@ -74,8 +74,8 @@ export default function App() {
   // メインタスクのチェック → サブタスクも全部連動
   const toggle = (item) => {
     if (editingId === item.id) return;
-    const newVal = !checked[item.id];
     setChecked(p => {
+      const newVal = !p[item.id];
       const n = { ...p, [item.id]: newVal };
       // メインをチェックON→サブも全ON、メインをOFF→サブはそのまま
       if (newVal && item.subs.length > 0) {
