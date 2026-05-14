@@ -60,7 +60,13 @@ export default function App() {
         const data = JSON.parse(raw);
         const loadedItems = (data.items || DEFAULT_ITEMS).map(i => ({ ...i, subs: i.subs || [] }));
         setItems(loadedItems);
-        setChecked(data.date === TODAY ? (data.checked || {}) : {});
+        if (data.date === TODAY) {
+          setChecked(data.checked || {});
+        } else {
+          // 日付が変わったらチェックをリセットして保存
+          setChecked({});
+          localStorage.setItem("checklist-data", JSON.stringify({ items: loadedItems, checked: {}, date: TODAY }));
+        }
       }
     } catch {}
     setLoaded(true);
@@ -146,8 +152,8 @@ export default function App() {
 
   const totalCount = items.reduce((acc, i) => acc + 1 + i.subs.length, 0);
   const done = items.reduce((acc, i) => {
-    const mainDone = checked[i.id] === true ? 1 : 0;
-    const subsDone = i.subs.filter(s => checked[`sub-${i.id}-${s.id}`] === true).length;
+    const mainDone = !!checked[i.id] ? 1 : 0;
+    const subsDone = i.subs.filter(s => !!checked[`sub-${i.id}-${s.id}`]).length;
     return acc + mainDone + subsDone;
   }, 0);
   const pct = totalCount ? (done / totalCount) * 100 : 0;
