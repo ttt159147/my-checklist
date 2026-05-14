@@ -144,9 +144,14 @@ export default function App() {
   };
   const onTouchEnd = () => { moveItems(touchStartIndex.current, dragOverIndex.current); touchStartIndex.current = null; dragOverIndex.current = null; setDraggingIndex(null); };
 
-  const done = items.filter(i => checked[i.id] === true).length;
-  const pct = items.length ? (done / items.length) * 100 : 0;
-  const allDone = done === items.length && items.length > 0;
+  const totalCount = items.reduce((acc, i) => acc + 1 + i.subs.length, 0);
+  const done = items.reduce((acc, i) => {
+    const mainDone = checked[i.id] === true ? 1 : 0;
+    const subsDone = i.subs.filter(s => checked[`sub-${i.id}-${s.id}`] === true).length;
+    return acc + mainDone + subsDone;
+  }, 0);
+  const pct = totalCount ? (done / totalCount) * 100 : 0;
+  const allDone = totalCount > 0 && done === totalCount;
 
   if (!loaded) return (
     <div style={{ minHeight: "100vh", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontFamily: "sans-serif" }}>読み込み中...</div>
@@ -166,7 +171,7 @@ export default function App() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <span style={{ color: "#6b7280", fontSize: "13px" }}>達成度</span>
             <span style={{ color: allDone ? "#10b981" : "#6366f1", fontWeight: "800", fontSize: "20px" }}>
-              {done}<span style={{ color: "#d1d5db", fontWeight: "400", fontSize: "13px" }}> / {items.length}</span>
+              {done}<span style={{ color: "#d1d5db", fontWeight: "400", fontSize: "13px" }}> / {totalCount}</span>
             </span>
           </div>
           <div style={{ height: "5px", background: "#f3f4f6", borderRadius: "99px", overflow: "hidden" }}>
@@ -266,8 +271,8 @@ export default function App() {
                   return (
                     <div key={sub.id} style={{
                       display: "flex", alignItems: "center", gap: "10px", padding: "9px 14px 9px 36px",
-                      background: isSubChecked ? "#f5f3ff" : "#fafafa",
-                      border: "1px solid #e5e7eb", borderTop: "none",
+                      background: isSubChecked ? "#f5f3ff" : c.bg,
+                      border: `1px solid ${c.border}`, borderTop: "none",
                       borderRadius: isLast ? "0 0 11px 11px" : "0",
                     }}>
                       <span style={{ color: "#d1d5db", fontSize: "12px", flexShrink: 0 }}>|--</span>
@@ -298,7 +303,7 @@ export default function App() {
                 })}
 
                 {addingSubId === item.id && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px 8px 36px", background: "#fafafa", border: "1px solid #e5e7eb", borderTop: "none", borderRadius: "0 0 11px 11px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px 8px 36px", background: "#fafafa", border: `1px solid ${c.border}`, borderTop: "none", borderRadius: "0 0 11px 11px" }}>
                     <span style={{ color: "#d1d5db", fontSize: "12px" }}>|--</span>
                     <input autoFocus value={newSubText} onChange={e => setNewSubText(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter") addSub(item.id); if (e.key === "Escape") setAddingSubId(null); }}
