@@ -144,7 +144,7 @@ export default function App() {
   };
   const onTouchEnd = () => { moveItems(touchStartIndex.current, dragOverIndex.current); touchStartIndex.current = null; dragOverIndex.current = null; setDraggingIndex(null); };
 
-  const done = items.filter(i => checked[i.id]).length;
+  const done = items.filter(i => checked[i.id] === true).length;
   const pct = items.length ? (done / items.length) * 100 : 0;
   const allDone = done === items.length && items.length > 0;
 
