@@ -3,13 +3,13 @@ import { useState, useEffect, useRef } from "react";
 const TODAY = new Date().toISOString().slice(0, 10);
 
 const COLORS = [
-  { id: "default", bg: "#ffffff", border: "#d1d5db", subBg: "#f3f4f6" },
-  { id: "red",     bg: "#fef2f2", border: "#fca5a5", subBg: "#fee2e2" },
-  { id: "orange",  bg: "#fff7ed", border: "#fdba74", subBg: "#ffedd5" },
-  { id: "yellow",  bg: "#fefce8", border: "#fde047", subBg: "#fef9c3" },
-  { id: "green",   bg: "#f0fdf4", border: "#86efac", subBg: "#dcfce7" },
-  { id: "blue",    bg: "#eff6ff", border: "#93c5fd", subBg: "#dbeafe" },
-  { id: "purple",  bg: "#faf5ff", border: "#c4b5fd", subBg: "#ede9fe" },
+  { id: "default", bg: "#ffffff", border: "#d1d5db" },
+  { id: "red",     bg: "#fef2f2", border: "#fca5a5" },
+  { id: "orange",  bg: "#fff7ed", border: "#fdba74" },
+  { id: "yellow",  bg: "#fefce8", border: "#fde047" },
+  { id: "green",   bg: "#f0fdf4", border: "#86efac" },
+  { id: "blue",    bg: "#eff6ff", border: "#93c5fd" },
+  { id: "purple",  bg: "#faf5ff", border: "#c4b5fd" },
 ];
 
 const COLOR_DOT = {
@@ -271,7 +271,7 @@ export default function App() {
                   return (
                     <div key={sub.id} style={{
                       display: "flex", alignItems: "center", gap: "10px", padding: "9px 14px 9px 36px",
-                      background: isSubChecked ? "#f5f3ff" : c.subBg,
+                      background: isSubChecked ? "#f5f3ff" : c.bg,
                       border: `1px solid ${c.border}`, borderTop: "none",
                       borderRadius: isLast ? "0 0 11px 11px" : "0",
                     }}>
