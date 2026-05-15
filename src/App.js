@@ -140,6 +140,29 @@ export default function App() {
 
   const setColor = (id, colorId) => { setItems(p => p.map(i => i.id === id ? { ...i, color: colorId } : i)); setColorPickerId(null); };
 
+  // サブタスク並び替え
+  const subDragIndex = useRef(null);
+  const subDragOverIndex = useRef(null);
+  const subDragItemId = useRef(null);
+
+  const onSubDragStart = (itemId, index) => { subDragItemId.current = itemId; subDragIndex.current = index; };
+  const onSubDragOver = (e, index) => { e.preventDefault(); subDragOverIndex.current = index; };
+  const onSubDrop = (itemId) => {
+    const from = subDragIndex.current;
+    const to = subDragOverIndex.current;
+    if (from === null || to === null || from === to || subDragItemId.current !== itemId) return;
+    setItems(p => p.map(i => {
+      if (i.id !== itemId) return i;
+      const newSubs = [...i.subs];
+      const [moved] = newSubs.splice(from, 1);
+      newSubs.splice(to, 0, moved);
+      return { ...i, subs: newSubs };
+    }));
+    subDragIndex.current = null;
+    subDragOverIndex.current = null;
+    subDragItemId.current = null;
+  };
+
   const moveItems = (from, to) => {
     if (from === null || to === null || from === to) return;
     const newItems = [...items]; const [moved] = newItems.splice(from, 1); newItems.splice(to, 0, moved); setItems(newItems);
@@ -282,12 +305,19 @@ export default function App() {
                   const isEditingSub = editingSubKey === `${item.id}-${sub.id}`;
                   const isLast = si === item.subs.length - 1 && addingSubId !== item.id;
                   return (
-                    <div key={sub.id} style={{
-                      display: "flex", alignItems: "center", gap: "10px", padding: "9px 14px 9px 36px",
-                      background: isSubChecked ? "#f5f3ff" : c.bg,
-                      border: `1px solid ${c.border}`, borderTop: "none",
-                      borderRadius: isLast ? "0 0 11px 11px" : "0",
-                    }}>
+                    <div key={sub.id}
+                      draggable
+                      onDragStart={() => onSubDragStart(item.id, si)}
+                      onDragOver={(e) => onSubDragOver(e, si)}
+                      onDrop={() => onSubDrop(item.id)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "10px", padding: "9px 14px 9px 28px",
+                        background: isSubChecked ? "#f5f3ff" : c.bg,
+                        border: `1px solid ${c.border}`, borderTop: "none",
+                        borderRadius: isLast ? "0 0 11px 11px" : "0",
+                        cursor: "default",
+                      }}>
+                      <span style={{ color: "#d1d5db", cursor: "grab", fontSize: "15px", flexShrink: 0, userSelect: "none" }}>⠿</span>
                       <span style={{ color: "#d1d5db", fontSize: "12px", flexShrink: 0 }}>|--</span>
                       <div onClick={() => toggleSub(item.id, sub.id)}
                         style={{ width: "16px", height: "16px", borderRadius: "4px", border: `2px solid ${isSubChecked ? "#6366f1" : "#d1d5db"}`, background: isSubChecked ? "#6366f1" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
