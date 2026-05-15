@@ -231,7 +231,7 @@ export default function App() {
 
                     {isEditing ? (
                       <input autoFocus value={editText} onChange={e => setEditText(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
+                        onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
                         onBlur={saveEdit} onClick={e => e.stopPropagation()}
                         style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "15px", outline: "none", padding: "2px 0" }}
                       />
@@ -295,7 +295,7 @@ export default function App() {
                       </div>
                       {isEditingSub ? (
                         <input autoFocus value={editSubText} onChange={e => setEditSubText(e.target.value)}
-                          onKeyDown={e => { if (e.key === "Enter") saveEditSub(item.id, sub.id); if (e.key === "Escape") setEditingSubKey(null); }}
+                          onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") saveEditSub(item.id, sub.id); if (e.key === "Escape") setEditingSubKey(null); }}
                           onBlur={() => saveEditSub(item.id, sub.id)}
                           style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "13px", outline: "none", padding: "1px 0" }}
                         />
@@ -319,7 +319,7 @@ export default function App() {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px 8px 36px", background: "#fafafa", border: `1px solid ${c.border}`, borderTop: "none", borderRadius: "0 0 11px 11px" }}>
                     <span style={{ color: "#d1d5db", fontSize: "12px" }}>|--</span>
                     <input autoFocus value={newSubText} onChange={e => setNewSubText(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") addSub(item.id); if (e.key === "Escape") setAddingSubId(null); }}
+                      onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") addSub(item.id); if (e.key === "Escape") setAddingSubId(null); }}
                       placeholder="サブタスク名..."
                       style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "13px", outline: "none", padding: "2px 0" }}
                     />
@@ -335,7 +335,7 @@ export default function App() {
         {adding ? (
           <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
             <input autoFocus value={newText} onChange={e => setNewText(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") addItem(); if (e.key === "Escape") setAdding(false); }}
+              onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") addItem(); if (e.key === "Escape") setAdding(false); }}
               placeholder="タスク名を入力..."
               style={{ flex: 1, padding: "11px 13px", background: "#fff", border: "1px solid #6366f1", borderRadius: "10px", color: "#1f2937", fontSize: "15px", outline: "none" }}
             />
