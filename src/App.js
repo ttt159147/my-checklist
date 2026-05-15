@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 
-const TODAY = new Date().toISOString().slice(0, 10);
+const getToday = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+const TODAY = getToday();
 
 const COLORS = [
   { id: "default", bg: "#ffffff", border: "#d1d5db" },
