@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 
 const getToday = () => {
   const d = new Date();
@@ -180,14 +180,17 @@ export default function App() {
   };
   const onTouchEnd = () => { moveItems(touchStartIndex.current, dragOverIndex.current); touchStartIndex.current = null; dragOverIndex.current = null; setDraggingIndex(null); };
 
-  const totalCount = items.reduce((acc, i) => acc + 1 + i.subs.length, 0);
-  const done = items.reduce((acc, i) => {
-    const mainDone = !!checked[i.id] ? 1 : 0;
-    const subsDone = i.subs.filter(s => !!checked[`sub-${i.id}-${s.id}`]).length;
-    return acc + mainDone + subsDone;
-  }, 0);
-  const pct = totalCount ? (done / totalCount) * 100 : 0;
-  const allDone = totalCount > 0 && done === totalCount;
+  const { totalCount, done, pct, allDone } = useMemo(() => {
+    const totalCount = items.reduce((acc, i) => acc + 1 + i.subs.length, 0);
+    const done = items.reduce((acc, i) => {
+      const mainDone = !!checked[i.id] ? 1 : 0;
+      const subsDone = i.subs.filter(s => !!checked[`sub-${i.id}-${s.id}`]).length;
+      return acc + mainDone + subsDone;
+    }, 0);
+    const pct = totalCount ? (done / totalCount) * 100 : 0;
+    const allDone = totalCount > 0 && done === totalCount;
+    return { totalCount, done, pct, allDone };
+  }, [items, checked]);
 
   if (!loaded) return (
     <div style={{ minHeight: "100vh", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontFamily: "sans-serif" }}>読み込み中...</div>
