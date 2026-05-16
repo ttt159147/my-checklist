@@ -258,7 +258,7 @@ export default function App() {
                     {isEditing ? (
                       <input autoFocus value={editText} onChange={e => setEditText(e.target.value)}
                         onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
-                        onBlur={saveEdit} onClick={e => e.stopPropagation()}
+                        onClick={e => e.stopPropagation()}
                         style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "15px", outline: "none", padding: "2px 0" }}
                       />
                     ) : (
@@ -290,7 +290,7 @@ export default function App() {
                         style={{ background: "none", border: "none", color: "#d1d5db", cursor: "pointer", fontSize: "14px", padding: "2px 4px" }}
                         onMouseEnter={e => e.target.style.color = "#f87171"} onMouseLeave={e => e.target.style.color = "#d1d5db"}>✕</button>
                     </>}
-                    {isEditing && <button onClick={() => setEditingId(null)} style={{ background: "none", border: "none", color: "#9ca3af", cursor: "pointer", fontSize: "13px", padding: "2px 4px" }}>✕</button>}
+                    {isEditing && <><button onClick={saveEdit} style={{ background: "#6366f1", border: "none", borderRadius: "6px", color: "#fff", fontSize: "12px", padding: "4px 8px", cursor: "pointer" }}>保存</button><button onClick={() => setEditingId(null)} style={{ background: "none", border: "none", color: "#9ca3af", cursor: "pointer", fontSize: "13px", padding: "2px 4px" }}>✕</button></>}
                   </div>
 
                   {colorPickerId === item.id && (
@@ -329,7 +329,7 @@ export default function App() {
                       {isEditingSub ? (
                         <input autoFocus value={editSubText} onChange={e => setEditSubText(e.target.value)}
                           onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") saveEditSub(item.id, sub.id); if (e.key === "Escape") setEditingSubKey(null); }}
-                          onBlur={() => saveEditSub(item.id, sub.id)}
+                          
                           style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "13px", outline: "none", padding: "1px 0" }}
                         />
                       ) : (
@@ -338,9 +338,9 @@ export default function App() {
                           {sub.text}
                         </span>
                       )}
-                      <button onClick={() => startEditSub(item.id, sub)}
+                      {isEditingSub ? (<><button onClick={() => saveEditSub(item.id, sub.id)} style={{ background: "#6366f1", border: "none", borderRadius: "6px", color: "#fff", fontSize: "12px", padding: "3px 8px", cursor: "pointer" }}>保存</button><button onClick={() => setEditingSubKey(null)} style={{ background: "none", border: "none", color: "#9ca3af", cursor: "pointer", fontSize: "12px", padding: "1px 3px" }}>✕</button></>) : (<button onClick={() => startEditSub(item.id, sub)}
                         style={{ background: "none", border: "none", color: "#d1d5db", cursor: "pointer", fontSize: "11px", padding: "1px 3px" }}
-                        onMouseEnter={e => e.target.style.color = "#6366f1"} onMouseLeave={e => e.target.style.color = "#d1d5db"}>✏️</button>
+                        onMouseEnter={e => e.target.style.color = "#6366f1"} onMouseLeave={e => e.target.style.color = "#d1d5db"}>✏️</button>)}
                       <button onClick={() => deleteSub(item.id, sub.id)}
                         style={{ background: "none", border: "none", color: "#d1d5db", cursor: "pointer", fontSize: "12px", padding: "1px 3px" }}
                         onMouseEnter={e => e.target.style.color = "#f87171"} onMouseLeave={e => e.target.style.color = "#d1d5db"}>✕</button>
