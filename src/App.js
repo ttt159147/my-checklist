@@ -271,6 +271,7 @@ export default function App() {
                       <input autoFocus ref={editTextRef} defaultValue={editText}
                         onKeyDown={e => { if (e.isComposing || e.keyCode === 229) return; if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
                         onClick={e => e.stopPropagation()}
+                        autoComplete="off" spellCheck={false}
                         style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "15px", outline: "none", padding: "2px 0" }}
                       />
                     ) : (
@@ -342,6 +343,7 @@ export default function App() {
                         <input autoFocus ref={editSubTextRef} defaultValue={editSubText}
                           onKeyDown={e => { if (e.isComposing || e.keyCode === 229) return; if (e.key === "Enter") saveEditSub(item.id, sub.id); if (e.key === "Escape") setEditingSubKey(null); }}
                           
+                          autoComplete="off" spellCheck={false}
                           style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "13px", outline: "none", padding: "1px 0" }}
                         />
                       ) : (
@@ -366,6 +368,7 @@ export default function App() {
                     <input autoFocus ref={newSubTextRef}
                       onKeyDown={e => { if (e.isComposing || e.keyCode === 229) return; if (e.key === "Enter") addSub(item.id); if (e.key === "Escape") setAddingSubId(null); }}
                       placeholder="サブタスク名..."
+                      autoComplete="off" spellCheck={false}
                       style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "13px", outline: "none", padding: "2px 0" }}
                     />
                     <button onClick={() => addSub(item.id)} style={{ background: "#6366f1", border: "none", borderRadius: "6px", color: "#fff", fontSize: "12px", padding: "4px 10px", cursor: "pointer" }}>追加</button>
@@ -382,6 +385,7 @@ export default function App() {
             <input autoFocus ref={newTextRef}
               onKeyDown={e => { if (e.isComposing || e.keyCode === 229) return; if (e.key === "Enter") addItem(); if (e.key === "Escape") setAdding(false); }}
               placeholder="タスク名を入力..."
+              autoComplete="off" spellCheck={false}
               style={{ flex: 1, padding: "11px 13px", background: "#fff", border: "1px solid #6366f1", borderRadius: "10px", color: "#1f2937", fontSize: "15px", outline: "none" }}
             />
             <button onClick={addItem} style={{ padding: "11px 16px", background: "#6366f1", border: "none", borderRadius: "10px", color: "#fff", fontWeight: "700", cursor: "pointer" }}>追加</button>
