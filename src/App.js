@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 const getToday = () => {
   const d = new Date();
@@ -45,6 +45,10 @@ export default function App() {
   const [checked, setChecked] = useState({});
   const [loaded, setLoaded] = useState(false);
   const [newText, setNewText] = useState("");
+  const newTextRef = useRef(null);
+  const newSubTextRef = useRef(null);
+  const editTextRef = useRef(null);
+  const editSubTextRef = useRef(null);
   const [adding, setAdding] = useState(false);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [colorPickerId, setColorPickerId] = useState(null);
@@ -106,8 +110,9 @@ export default function App() {
   const toggleExpand = (id) => setExpandedIds(p => ({ ...p, [id]: !p[id] }));
 
   const addItem = () => {
-    if (!newText.trim()) return;
-    setItems(p => [...p, { id: Date.now(), text: newText.trim(), color: "default", subs: [] }]);
+    const val = newTextRef.current ? newTextRef.current.value.trim() : newText.trim();
+    if (!val) return;
+    setItems(p => [...p, { id: Date.now(), text: val, color: "default", subs: [] }]);
     setNewText(""); setAdding(false);
   };
 
@@ -117,8 +122,9 @@ export default function App() {
   };
 
   const addSub = (itemId) => {
-    if (!newSubText.trim()) return;
-    setItems(p => p.map(i => i.id === itemId ? { ...i, subs: [...i.subs, { id: Date.now(), text: newSubText.trim() }] } : i));
+    const val = newSubTextRef.current ? newSubTextRef.current.value.trim() : newSubText.trim();
+    if (!val) return;
+    setItems(p => p.map(i => i.id === itemId ? { ...i, subs: [...i.subs, { id: Date.now(), text: val }] } : i));
     setExpandedIds(p => ({ ...p, [itemId]: true }));
     setNewSubText(""); setAddingSubId(null);
   };
@@ -129,12 +135,18 @@ export default function App() {
   };
 
   const startEdit = (item) => { setEditingId(item.id); setEditText(item.text); setColorPickerId(null); };
-  const saveEdit = () => { if (!editText.trim()) return; setItems(p => p.map(i => i.id === editingId ? { ...i, text: editText.trim() } : i)); setEditingId(null); };
+  const saveEdit = () => {
+    const val = editTextRef.current ? editTextRef.current.value.trim() : editText.trim();
+    if (!val) return;
+    setItems(p => p.map(i => i.id === editingId ? { ...i, text: val } : i));
+    setEditingId(null);
+  };
 
   const startEditSub = (itemId, sub) => { setEditingSubKey(`${itemId}-${sub.id}`); setEditSubText(sub.text); };
   const saveEditSub = (itemId, subId) => {
-    if (!editSubText.trim()) return;
-    setItems(p => p.map(i => i.id === itemId ? { ...i, subs: i.subs.map(s => s.id === subId ? { ...s, text: editSubText.trim() } : s) } : i));
+    const val = editSubTextRef.current ? editSubTextRef.current.value.trim() : editSubText.trim();
+    if (!val) return;
+    setItems(p => p.map(i => i.id === itemId ? { ...i, subs: i.subs.map(s => s.id === subId ? { ...s, text: val } : s) } : i));
     setEditingSubKey(null);
   };
 
@@ -256,8 +268,8 @@ export default function App() {
                     </div>
 
                     {isEditing ? (
-                      <input autoFocus value={editText} onChange={e => setEditText(e.target.value)}
-                        onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
+                      <input autoFocus ref={editTextRef} defaultValue={editText}
+                        onKeyDown={e => { if (e.isComposing || e.keyCode === 229) return; if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
                         onClick={e => e.stopPropagation()}
                         style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "15px", outline: "none", padding: "2px 0" }}
                       />
@@ -327,8 +339,8 @@ export default function App() {
                         {isSubChecked && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3L3.5 5.5L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                       </div>
                       {isEditingSub ? (
-                        <input autoFocus value={editSubText} onChange={e => setEditSubText(e.target.value)}
-                          onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") saveEditSub(item.id, sub.id); if (e.key === "Escape") setEditingSubKey(null); }}
+                        <input autoFocus ref={editSubTextRef} defaultValue={editSubText}
+                          onKeyDown={e => { if (e.isComposing || e.keyCode === 229) return; if (e.key === "Enter") saveEditSub(item.id, sub.id); if (e.key === "Escape") setEditingSubKey(null); }}
                           
                           style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "13px", outline: "none", padding: "1px 0" }}
                         />
@@ -351,8 +363,8 @@ export default function App() {
                 {addingSubId === item.id && (
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px 8px 36px", background: "#fafafa", border: `1px solid ${c.border}`, borderTop: "none", borderRadius: "0 0 11px 11px" }}>
                     <span style={{ color: "#d1d5db", fontSize: "12px" }}>|--</span>
-                    <input autoFocus value={newSubText} onChange={e => setNewSubText(e.target.value)}
-                      onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") addSub(item.id); if (e.key === "Escape") setAddingSubId(null); }}
+                    <input autoFocus ref={newSubTextRef}
+                      onKeyDown={e => { if (e.isComposing || e.keyCode === 229) return; if (e.key === "Enter") addSub(item.id); if (e.key === "Escape") setAddingSubId(null); }}
                       placeholder="サブタスク名..."
                       style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid #6366f1", color: "#1f2937", fontSize: "13px", outline: "none", padding: "2px 0" }}
                     />
@@ -367,8 +379,8 @@ export default function App() {
 
         {adding ? (
           <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-            <input autoFocus value={newText} onChange={e => setNewText(e.target.value)}
-              onKeyDown={e => { if (e.isComposing) return; if (e.key === "Enter") addItem(); if (e.key === "Escape") setAdding(false); }}
+            <input autoFocus ref={newTextRef}
+              onKeyDown={e => { if (e.isComposing || e.keyCode === 229) return; if (e.key === "Enter") addItem(); if (e.key === "Escape") setAdding(false); }}
               placeholder="タスク名を入力..."
               style={{ flex: 1, padding: "11px 13px", background: "#fff", border: "1px solid #6366f1", borderRadius: "10px", color: "#1f2937", fontSize: "15px", outline: "none" }}
             />
