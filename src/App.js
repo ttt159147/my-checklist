@@ -21,19 +21,7 @@ const COLOR_DOT = {
 };
 
 const DEFAULT_ITEMS = [
-  { id:1,  text:"クラフトボス",           color:"default", subs:[] },
-  { id:2,  text:"コカ・コーラレシートアップ", color:"default", subs:[] },
-  { id:3,  text:"毎日レシート",            color:"default", subs:[] },
-  { id:4,  text:"バーコードスキャン",       color:"default", subs:[] },
-  { id:5,  text:"ジョージアスキャン",       color:"default", subs:[] },
-  { id:6,  text:"やかんスキャン",          color:"default", subs:[] },
-  { id:7,  text:"綾鷹スキャン",           color:"default", subs:[] },
-  { id:8,  text:"アクエリアススキャン",     color:"default", subs:[] },
-  { id:9,  text:"バーコードx5スキャン",    color:"default", subs:[] },
-  { id:10, text:"yモバイルくじ",          color:"default", subs:[] },
-  { id:11, text:"ソフトバンクくじ",        color:"default", subs:[] },
-  { id:12, text:"エビスおみくじ",          color:"default", subs:[] },
-  { id:13, text:"epark薬クーポン",        color:"default", subs:[] },
+  { id:1, text:"テスト", color:"default", subs:[] },
 ];
 
 // 入力コンポーネント（非制御）
